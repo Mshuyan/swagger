@@ -93,36 +93,6 @@
 
   > 代码中的配置在页面上都能找到对应的内容
 
-## 对请求参数进行说明的2种方式
-
-```java
-@ApiOperation(value = "测试ApiModelProperty用法")
-@GetMapping("/test1/{id}")
-public String testApiModelProperty(TestDto dto ){
-    return "you said " + dto.getId();
-}
-
-...
-    
-@Data
-public class TestDto implements Serializable {
-    private static final long serialVersionUID = 1L;
-    @ApiModelProperty(value = "订单ID",example = "1")
-    private Long id;
-}
-```
-
-等效于
-
-```java
-@ApiOperation(value = "测试ApiModelProperty用法")
-@ApiImplicitParam(name = "id", value = "订单ID", dataType = "Long",example = "1")
-@GetMapping("/test1/{id}")
-public String testApiModelProperty(TestDto dto ){
-    return "you said " + dto.getId();
-}
-```
-
 ## Models
 
 > swagger页面在接口下方有一栏显示`Models`
