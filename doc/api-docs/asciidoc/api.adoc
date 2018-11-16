@@ -1,0 +1,192 @@
+= 测试swagger
+
+
+[[_overview]]
+== Overview
+测试swagger使用
+
+
+=== Version information
+[%hardbreaks]
+__Version__ : 1.0
+
+
+=== Contact information
+[%hardbreaks]
+__Contact__ : Will
+__Contact Email__ : 434224591@qq.com
+
+
+=== URI scheme
+[%hardbreaks]
+__Host__ : localhost:8080
+__BasePath__ : /api
+
+
+=== Tags
+
+* 测试swagger相关的api : TestController
+
+
+
+
+[[_paths]]
+== Resources
+
+[[_12f80e692e8b6f0c0c26e76282ec2d3b]]
+=== 测试swagger相关的api
+TestController
+
+
+[[_testusingget]]
+==== 测试
+....
+GET /test
+....
+
+
+===== Description
+note
+
+
+===== Parameters
+
+[options="header", cols=".^2,.^3,.^9,.^4"]
+|===
+|Type|Name|Description|Schema
+|**Query**|**str** +
+__required__|要说的话|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2,.^14,.^4"]
+|===
+|HTTP Code|Description|Schema
+|**200**|OK|string
+|**401**|Unauthorized|No Content
+|**403**|Forbidden|No Content
+|**404**|Not Found|No Content
+|===
+
+
+===== Produces
+
+* `*/*`
+
+
+[[_testlongusingget]]
+==== 测试Long类型必须指定example问题
+....
+GET /test/{id}
+....
+
+
+===== Parameters
+
+[options="header", cols=".^2,.^3,.^9,.^4"]
+|===
+|Type|Name|Description|Schema
+|**Query**|**id** +
+__required__|Long 类型|integer (int64)
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2,.^14,.^4"]
+|===
+|HTTP Code|Description|Schema
+|**200**|OK|string
+|**401**|Unauthorized|No Content
+|**403**|Forbidden|No Content
+|**404**|Not Found|No Content
+|===
+
+
+===== Produces
+
+* `*/*`
+
+
+[[_testapimodelpropertyusingget]]
+==== 测试ApiModelProperty用法
+....
+GET /test1/{id}
+....
+
+
+===== Parameters
+
+[options="header", cols=".^2,.^3,.^4"]
+|===
+|Type|Name|Schema
+|**Query**|**id** +
+__optional__|integer (int64)
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2,.^14,.^4"]
+|===
+|HTTP Code|Description|Schema
+|**200**|OK|string
+|**401**|Unauthorized|No Content
+|**403**|Forbidden|No Content
+|**404**|Not Found|No Content
+|===
+
+
+===== Produces
+
+* `*/*`
+
+
+[[_testreturnusingget]]
+==== 测试返回数据说明
+....
+GET /test2
+....
+
+
+===== Responses
+
+[options="header", cols=".^2,.^14,.^4"]
+|===
+|HTTP Code|Description|Schema
+|**200**|OK|<<_returndto,ReturnDto>>
+|**401**|Unauthorized|No Content
+|**403**|Forbidden|No Content
+|**404**|Not Found|No Content
+|===
+
+
+===== Produces
+
+* `*/*`
+
+
+
+
+[[_definitions]]
+== Definitions
+
+[[_returndto]]
+=== ReturnDto
+订单查询请求数据
+
+
+[options="header", cols=".^3,.^11,.^4"]
+|===
+|Name|Description|Schema
+|**id** +
+__optional__|订单ID +
+**Example** : `1`|integer (int64)
+|===
+
+
+
+
+
