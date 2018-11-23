@@ -111,7 +111,22 @@ public class ReturnDto implements Serializable {
 }
 ```
 
+## @ApiParam
 
+> 对请求参数进行说明时，一种方式是使用上面提到的`@ApiImplicitParam`注解，还有1种方式是使用`@ApiParam`注解
+
+```java
+@Data
+public class PageParam implements Serializable {
+    private static final long serialVersionUID = 1L;
+    @ApiParam(value = "每页大小", defaultValue = "12",example = "12")
+    private Integer pageSize = 12;
+    @ApiParam(value = "当前页", defaultValue = "1",example = "1")
+    private Integer pageNum = 1;
+}
+```
+
+> 此时，在定义接口上的方法上就不需要对参数进行说明了
 
 ## 说明
 
@@ -134,6 +149,85 @@ public class ReturnDto implements Serializable {
 + header，请求头参数
 
 + form，form表单参数
+
+### `dataType`
+
+> `dataType`支持基本类型或自定义类型
+>
+> 该属性不区分大小写，int、INT、Int均可识别为int
+>
+> 其中基本类型包括：string（默认）、int、long等，但`Integer`会被识别为引用类型
+
++ 数组
+
+  ```java
+  @ApiOperation("根据用户id数组集获得用户集合信息")
+  @ApiImplicitParam(name="userIds", value="用户ID数组集", required=true, paramType="query" ,allowMultiple=true, dataType = "String")
+  @GetMapping("/ids-user-list")
+  ```
+
+  > allowMultiple=true,————表示是数组格式的参数 
+  > dataType = "String"————表示数组中参数的类型
+
+## 全局定义响应消息
+
+```java
+@Configuration
+@EnableSwagger2
+@ConditionalOnProperty(prefix = "spring",value = {"profiles.active"},havingValue = "dev")
+public class Swagger2 {
+    @Bean
+    public Docket createRestApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo())
+                .globalResponseMessage(RequestMethod.GET,responseMessages())
+                .globalResponseMessage(RequestMethod.HEAD,responseMessages())
+                .globalResponseMessage(RequestMethod.POST,responseMessages())
+                .globalResponseMessage(RequestMethod.PUT,responseMessages())
+                .globalResponseMessage(RequestMethod.PATCH,responseMessages())
+                .globalResponseMessage(RequestMethod.DELETE,responseMessages())
+                .globalResponseMessage(RequestMethod.OPTIONS,responseMessages())
+                .globalResponseMessage(RequestMethod.TRACE,responseMessages())
+                .select()
+                //为当前包路径
+                .apis(RequestHandlerSelectors.basePackage("com.rjs.cpmall.buyer"))
+                .paths(PathSelectors.any())
+                .build();
+    }
+
+    private ApiInfo apiInfo() {
+        return new ApiInfoBuilder()
+                //页面标题
+                .title("cpmall 正版软件商城 买家平台")
+                //创建人、个人门户网站、邮箱
+                .contact(new Contact("Will", "https://www.github.com/Mshuyan", "434224591@qq.com"))
+                //版本号
+                .version("1.0")
+                //描述
+                .description("买家平台接口文档")
+                .build();
+    }
+
+    private List<ResponseMessage> responseMessages(){
+        List<ResponseMessage> responseMessageList = new ArrayList<>();
+        Map<String, Header> headers = new HashMap<>(4);
+        headers.put("token",new Header("token","jwt令牌",new ModelRef("string")));
+        responseMessageList.add(new ResponseMessageBuilder().code(200).message("ok").headersWithDescription(headers).build());
+        responseMessageList.add(new ResponseMessageBuilder().code(400).message("请求参数错误").responseModel(new ModelRef("MessageResponse")).build());
+        responseMessageList.add(new ResponseMessageBuilder().code(401).message("未授权/授权失败").responseModel(new ModelRef("MessageResponse")).build());
+        responseMessageList.add(new ResponseMessageBuilder().code(404).message("路由不存在").responseModel(new ModelRef("MessageResponse")).build());
+        responseMessageList.add(new ResponseMessageBuilder().code(405).message("不支持的请求方法").responseModel(new ModelRef("MessageResponse")).build());
+        responseMessageList.add(new ResponseMessageBuilder().code(500).message("服务器内部错误").responseModel(new ModelRef("MessageResponse")).build());
+        return responseMessageList;
+    }
+}
+```
+
+
+
+## 全局定义请求参数
+
+
 
 ## 生产环境禁用swagger
 
@@ -387,10 +481,65 @@ public class ReturnDto implements Serializable {
 
 - 解决方案
 
-  > 在使用`@ApiImplicitParams`或`@ApiModelProperty`注解对`Long`类型属性进行说明时，必须指定`example`属性，并且必须为内容为数字的字符串
+  > 在使用`@ApiImplicitParams`或`@ApiModelProperty`注解对`long`或`int`类型属性进行说明时，必须指定`example`属性，并且必须为内容为数字的字符串
 
 - 例
 
   ```java
   @ApiImplicitParam(name = "itemId", value = "产品id", paramType = "path", required = true, dataType = "Long",example = "0")
   ```
+
+## 显示校验规则
+
+> 参考资料：[Documenting Spring Boot REST API with Swagger and SpringFox](https://www.vojtechruzicka.com/documenting-spring-boot-rest-api-swagger-springfox/) 
+
+实际项目开发中，我们需要对请求参数进行校验，如：
+
+```java
+public class Person {
+    @NotNull
+    private int id;
+
+    @NotBlank
+    @Size(min = 1, max = 20)
+    private String firstName;
+
+    @NotBlank
+    @Pattern(regexp ="[SOME REGULAR EXPRESSION]")
+    private String lastName;
+
+    @Min(0)
+    @Max(100)
+    private int age;
+
+    //... Constructor, getters, setters, ...
+}
+```
+
+此时，我们希望`swagger`生成的接口文档是这样的：
+
+![swagger-jsr-303-cba05f0c3e718c0e125f2462d39e8b83-4c4e5](../../../Downloads/swagger-jsr-303-cba05f0c3e718c0e125f2462d39e8b83-4c4e5.png) 
+
+为了达到这个效果，我们可以进行如下配置：
+
++ pom
+
+  ```xml
+  <dependency>
+      <groupId>io.springfox</groupId>
+      <artifactId>springfox-bean-validators</artifactId>
+      <version>2.9.2</version>
+  </dependency>
+  ```
+
++ `swagger`配置类上加上1个`Import`注解
+
+  ```java
+  @Configuration
+  @EnableSwagger2
+  @ConditionalOnProperty(prefix = "spring",value = {"profiles.active"},havingValue = "dev")
+  @Import(BeanValidatorPluginsConfiguration.class)
+  public class Swagger2 {
+  ```
+
+
