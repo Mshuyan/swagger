@@ -223,11 +223,96 @@ public class Swagger2 {
 }
 ```
 
+`new ModelRef("MessageResponse")`中的`MessageResponse`是1个实体类类名，该类即使使用了`@ApiModel`注解，依然无法被`swagger`扫描到，会在`swagger`页面中报如下错误：
 
+```
+Resolver error at paths./login.post.responses.400.schema.$ref
+Could not resolve reference because of: Could not resolve pointer: /definitions/MessageResponse does not exist in document
+```
+
+因为`MessageResponse`这个model还没有被注册到`swagger`中，需要在`Controller`中的某个接口上做如下配置，让swagger能找到这个model：
+
+```java
+@ApiResponses({
+    @ApiResponse(code = 400,message = "请求参数错误",response = MessageResponse.class)
+})
+```
 
 ## 全局定义请求参数
 
+> 参考资料：
+>
+> + [swagger ui 添加header请求头参数](https://blog.csdn.net/uncle_david/article/details/79283422) 
 
+```java
+public Docket customDocket(){
+    ParameterBuilder ticketPar = new ParameterBuilder();
+    List<Parameter> pars = new ArrayList<Parameter>();  
+    ticketPar.name("ticket").description("user ticket")
+        .modelRef(new ModelRef("string")).parameterType("header") 
+        .required(false).build(); //header中的ticket参数非必填，传空也可以
+    pars.add(ticketPar.build());    //根据每个方法名也知道当前方法在设置什么参数
+
+    return new Docket(DocumentationType.SWAGGER_2)
+        .select()
+        .apis(RequestHandlerSelectors.any())  
+        .build()  
+        .globalOperationParameters(pars)  
+        .apiInfo(apiInfo());
+}
+```
+
+
+
+## 访问安全API
+
+> 资料参见：
+>
+> + [swagger-api(GITHUB)](https://github.com/swagger-api/swagger-core/wiki/Annotations-1.5.X) 
+> + 
+>
+> 有些接口需要token才能访问，进行如下配置后，就不用手动配置并输入token了
+>
+> 在正常swagger配置上，需要加入如下这段配置：
+
+```java
+@Configuration
+@EnableSwagger2
+@ConditionalOnProperty(prefix = "spring", value = {"profiles.active"}, havingValue = "dev")
+@Import(BeanValidatorPluginsConfiguration.class)
+public class Swagger2 {
+    @Bean
+    public Docket createRestApi() {
+        // 其他配置
+        Swagger2Util swaggerBean = new Swagger2Util("后台管理接口文档", "产业地图 后台管理", "com.rjs.industry.map");
+        Docket docket = swaggerBean.createRestApi();
+        // security swagger相关配置
+        docket.securitySchemes(securitySchemes())
+        return docket;
+    }
+
+    private List<ApiKey> securitySchemes() {
+        List<ApiKey> list = new ArrayList<>();
+        /*
+         * name：页面显示名称
+         * keyname：自动携带的参数名称
+         * passAs：自动携带的参数类型
+         */
+        list.add(new ApiKey("Authorization", "X-Auth-Token", "header"));
+        return list;
+    }
+}
+```
+
+然后在需要进行认证的接口上使用如下注解，表示该接口需要token
+
+```java
+@ApiOperation(value = "获取权限列表",
+            notes = "需要登陆",
+            authorizations = {
+                    @Authorization("Authorization")
+            })
+```
 
 ## 生产环境禁用swagger
 
@@ -518,7 +603,7 @@ public class Person {
 
 此时，我们希望`swagger`生成的接口文档是这样的：
 
-![swagger-jsr-303-cba05f0c3e718c0e125f2462d39e8b83-4c4e5](../../../Downloads/swagger-jsr-303-cba05f0c3e718c0e125f2462d39e8b83-4c4e5.png) 
+![image-20181206095312955](assets/image-20181206095312955.png) 
 
 为了达到这个效果，我们可以进行如下配置：
 
