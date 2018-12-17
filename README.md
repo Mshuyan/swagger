@@ -111,6 +111,26 @@ public class ReturnDto implements Serializable {
 }
 ```
 
++ 忽略字段
+
+  如果想忽略实体类中某些字段，可以使用`@JsonIgnore`注解实现
+
+  ```java
+  @ApiModel(description = "行业信息")
+  @Data
+  public class TradeEntity implements Serializable {
+      private static final long serialVersionUID = 1L;
+  
+      @ApiModelProperty("行业id")
+      private Long id = 0L;
+      @ApiModelProperty("行业名称")
+      private String name = "";
+      @JsonIgnore
+      private Integer type = 0;
+  }
+  ```
+
+
 ## @ApiParam
 
 > 对请求参数进行说明时，一种方式是使用上面提到的`@ApiImplicitParam`注解，还有1种方式是使用`@ApiParam`注解
@@ -573,6 +593,34 @@ public class Swagger2 {
   ```java
   @ApiImplicitParam(name = "itemId", value = "产品id", paramType = "path", required = true, dataType = "Long",example = "0")
   ```
+
+### 登录接口无法登陆
+
+> 因为`/login`接口由security自动提供，所以无法通过注解显示在swagger上，所以在controller中定义1个没用的`/login`接口，用于在swagger中显示该接口
+
+```java
+@ApiOperation("登录")
+@ApiImplicitParams({
+    @ApiImplicitParam(name = "username", value = "用户名", paramType = "form", required = true),
+    @ApiImplicitParam(name = "password", value = "密码", paramType = "form", required = true)
+})
+@ApiResponses({
+    @ApiResponse(code = 400, message = "请求参数错误", response = MessageResponse.class)
+})
+@PostMapping(value = "/login")
+public LoginResultDto login() {
+    return null;
+}
+```
+
+> + 此时使用swagger测试该接口，会发现始终无法获取到用户输入的`username`和`password`
+>
+> + 这是因为此时swagger提交的请求的`Content-Type`请求头为`application/json`，而security的`login`接口要求该请求头必须为`application/x-www-form-urlencoded`
+> + 所以需要在`@PostMapping`注解上指定`consumes`属性为`MediaType.APPLICATION_FORM_URLENCODED_VALUE`
+
+```java
+@PostMapping(value = "/login",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+```
 
 ## 显示校验规则
 
