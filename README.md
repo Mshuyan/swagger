@@ -674,5 +674,7 @@ public class Person {
   @Import(BeanValidatorPluginsConfiguration.class)
   public class Swagger2 {
   ```
-
+## 文件上传
+> 参见[swagger文件上传的写法](https://blog.csdn.net/qq_23167527/article/details/78559096) 
+  尝试过多文件上传，没能实现
 
