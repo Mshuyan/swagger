@@ -164,11 +164,17 @@ public class PageParam implements Serializable {
 
   > query是`paramType`属性的默认值
 
-+ body，
-
 + header，请求头参数
 
-+ form，form表单参数
++ form，使用form表单提交参数；当`Content-Type`为如下值时，使用该方式
+  
+  + multipart/form-data
+  
+  + application/x-www-form-urlencoded
+  
+  + text/plain
+  
++ body，在请求正文中，使用非form表单方式提交参数
 
 ### `dataType`
 
