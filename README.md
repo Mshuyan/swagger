@@ -97,7 +97,7 @@
 
 > swagger页面在接口下方有一栏显示`Models`
 >
-> 这里是将所有接口 **返回值** 涉及到的实体类在这里进行了说明
+> 这里是将所有接口 **请求参数、返回值** 涉及到的实体类在这里进行了说明
 >
 > 对返回值字段进行描述可以通过如下代码
 
@@ -127,6 +127,18 @@ public class ReturnDto implements Serializable {
       private String name = "";
       @JsonIgnore
       private Integer type = 0;
+  }
+  ```
+
++ 使用实体类接受请求参数时，如果想指定参数的[传递方式](#`paramType`)，没办法通过`swagger`方式指定，需要在`RequestMapping`注解中设置`consumes`属性来指定`Content-type`头来完成
+
+  ```java
+  // 指定了 consumes，ArticleFormDto 中的参数才会以form形式传递
+  @PostMapping(value = "/article/{id}",consumes = "application/x-www-form-urlencoded")
+  public MessageResponse updateArticle(@Validated ArticleFormDto dto,
+                                       @ApiParam(value = "文章id", example = "1", required = true) @PathVariable Long id) {
+      articleServiceImpl.updateArticle(dto, id);
+      return new MessageResponse(0, "success");
   }
   ```
 
@@ -174,7 +186,7 @@ public class PageParam implements Serializable {
   
   + text/plain
   
-+ body，在请求正文中，使用非form表单方式提交参数
++ body，当`Content-type`为`application/json`时，使用该方式
 
 ### `dataType`
 
