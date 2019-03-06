@@ -207,6 +207,15 @@ public class PageParam implements Serializable {
   > allowMultiple=true,————表示是数组格式的参数 
   > dataType = "String"————表示数组中参数的类型
 
+### 指定`Content-type`
+
+如果想指定swagger发送请求的`Content-Type`，有2种方式：
+
++ 通过`@RequestMapping`的`consumes`属性指定
++ 通过`@ApiOperation`的`consumes`属性指定
+
+推荐第一种
+
 ## 全局定义响应消息
 
 ```java
