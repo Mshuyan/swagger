@@ -63,15 +63,16 @@
             <plugin>
                 <groupId>io.github.swagger2markup</groupId>
                 <artifactId>swagger2markup-maven-plugin</artifactId>
-                <version>1.3.3</version>
+                <version>1.3.7</version>
                 <configuration>
                     <!--此处端口一定要是当前项目启动所用的端口-->
-                    <swaggerInput>http://localhost:8080/api/v2/api-docs</swaggerInput>
+                    <swaggerInput>http://localhost:8080/v2/api-docs</swaggerInput>
                     <outputFile>doc/api-docs/asciidoc/api</outputFile>
                     <config>
                         <!-- 除了ASCIIDOC之外，还有MARKDOWN和CONFLUENCE_MARKUP可选 -->
-                        <swagger2markup.markupLanguage>ASCIIDOC</swagger2markup.markupLanguage>
+                        <swagger2markup.markupLanguage>MARKDOWN</swagger2markup.markupLanguage>
                         <swagger2markup.pathsGroupedBy>TAGS</swagger2markup.pathsGroupedBy>
+                        <swagger2markup.generatedExamplesEnabled>true</swagger2markup.generatedExamplesEnabled>
                     </config>
                 </configuration>
             </plugin>

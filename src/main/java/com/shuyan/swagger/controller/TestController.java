@@ -1,40 +1,38 @@
 package com.shuyan.swagger.controller;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.sun.deploy.net.protocol.ProtocolType;
+import io.swagger.annotations.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import sun.security.ssl.ProtocolVersion;
+
+import java.util.List;
 
 /**
  * @author will
  */
+@Api(tags = "测试swagger相关的api")
 @RestController
-@Api(tags = "测试swagger相关的api",description = "TestController")
 public class TestController {
     /**
      * 基本测试
-     * @param str
-     * @return
      */
-    @ApiOperation(value = "测试", notes = "note")
+    @ApiOperation(value = "测试", notes = "note",authorizations = @Authorization("AuthKey"))
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "str", value = "要说的话", paramType = "query",required = true, dataType = "String")
+            @ApiImplicitParam(name = "str", value = "要说的话",paramType = "form",type = "integer"),
+            @ApiImplicitParam(name = "id", value = "订单id",required = true,paramType = "form",dataType = "long",allowableValues = "range[1, 5)")
     })
-    // 当只有1个参数时，上面注解可替换为：
-    // @ApiImplicitParam(name = "keywords", value = "关键字，以空格分割", required = true, dataType = "String")
-    @GetMapping("/test")
-    public String test(String str){
-        return "you said " + str;
+    @PostMapping(value = "/test")
+    public String test(String str, TestDto dto){
+        return "you said "+  str + dto;
     }
 
 
     /**
      * ApiImplicitParam 的 dataType 指定为Long时，必须指定 example 属性
      */
-    @ApiOperation(value = "测试Long类型必须指定example问题")
-    @ApiImplicitParam(name = "id", value = "Long 类型", required = true, dataType = "Long",example = "1")
+    @ApiOperation(value = "测试Long类型必须指定example问题",nickname = "123")
+    @ApiImplicitParam(name = "id", value = "Long 类型", required = true, dataType = "Long",example = "1",paramType = "header")
     @GetMapping("/test/{id}")
     public String testLong(Long id){
         return "you said " + id;
@@ -57,7 +55,23 @@ public class TestController {
      */
     @ApiOperation(value = "测试返回数据说明")
     @GetMapping("/test2")
-    public ReturnDto testReturn(){
-        return new ReturnDto();
+    public TestForm testReturn(){
+        return new TestForm();
+    }
+
+    @ApiOperation(value = "body")
+    @ApiImplicitParam(name = "dto",dataType = "TestDto",examples = @Example({
+            @ExampleProperty(mediaType = "id",value = "12")
+    }))
+    @PostMapping(value = "/body")
+    public String body(@RequestBody TestDto dto){
+        return dto.toString();
+    }
+
+
+    @ApiOperation(value = "param", response = Integer.class, responseContainer = "list")
+    @PostMapping(value = "/param")
+    public String param(TestDto dto){
+        return "11";
     }
 }

@@ -20,7 +20,7 @@ __Contact Email__ : 434224591@qq.com
 === URI scheme
 [%hardbreaks]
 __Host__ : localhost:8080
-__BasePath__ : /api
+__BasePath__ : /
 
 
 === Tags
