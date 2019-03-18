@@ -815,7 +815,7 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
 
 ### 命令行生成
 
-- 将[swagger2markup.zip](swagger2markup.zip)解压到某目录下
+- 将[swagger2markup.zip](http://disk.bymyself.club/study/swagger2markup.zip)解压到某目录下
 
 - 在该目录下执行如下命令
 
