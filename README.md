@@ -283,7 +283,7 @@ public class Swagger2 {
 
   > swagger在开发过程中好用，但是生产环境下必须屏蔽swagger，不然很容易让人利用swagger执行对库操作，安全隐患非常大
 
-- 如何禁用
+- 方式1
 
   > 在`swagger`配置类上加上条件注解实现生成环境禁用
 
@@ -299,6 +299,21 @@ public class Swagger2 {
   > @ConditionalOnProperty作用
   >
   > 当配置文件中`spring.profiles.active`的值为`dev`时，加载该配置类
+
+- 方式2
+
+  > 在`swagger`配置类上使用`@Profile({"dev"})`
+
+  ```java
+  @Configuration
+  @EnableSwagger2
+  @Profile({"dev"})
+  public class Swagger2 {
+      ......
+  }
+  ```
+
+  > 作用与方式1完全相同
 
 ### 显示校验规则
 
@@ -748,6 +763,11 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
     @ApiResponse(code = 200,message = "成功",responseHeaders = @ResponseHeader(name = "test",response = String.class,description = "test111",responseContainer = "list"))
   })
   ```
+
+### @ApiIgnore
+
++ 作用域：接口类、接口方法
++ 功能：不展示其标注的接口
 
 ## 生成离线文档
 
