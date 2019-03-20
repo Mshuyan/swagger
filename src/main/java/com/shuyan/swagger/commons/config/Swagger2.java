@@ -27,13 +27,8 @@ import java.util.*;
 public class Swagger2 {
     @Bean
     public Docket createRestApi() {
-/*        HashSet<String> protocols = new HashSet<>();
-        protocols.add("http");
-        protocols.add("https");*/
         return new Docket(DocumentationType.SWAGGER_2)
-               // .protocols(protocols)
                 .apiInfo(apiInfo())
-                //.globalResponseMessage(RequestMethod.POST,responseMessages())
                 .securitySchemes(securitySchemes())
 
                 .select()
@@ -64,54 +59,6 @@ public class Swagger2 {
          * passAs：自动携带的参数类型
          */
         list.add(new ApiKey("Authorization", "X-Auth-Token", "header"));
-        list.add(securityScheme());
         return list;
-    }
-
-    private SecurityScheme securityScheme() {
-        GrantType grantType = new AuthorizationCodeGrantBuilder()
-                .tokenEndpoint(new TokenEndpoint("https://github.com/login/oauth" + "/access_token", "access_token"))
-                .tokenRequestEndpoint(
-                        new TokenRequestEndpoint("https://github.com/login/oauth" + "/authorize", "client-id", "client-secret"))
-                .build();
-
-        SecurityScheme oauth = new OAuthBuilder().name("spring_oauth")
-                .grantTypes(Arrays.asList(grantType))
-                .scopes(Arrays.asList(scopes()))
-                .build();
-        return oauth;
-    }
-
-    private AuthorizationScope[] scopes() {
-        AuthorizationScope[] scopes = {
-                new AuthorizationScope("read", "for read operations"),
-                new AuthorizationScope("write", "for write operations"),
-                new AuthorizationScope("foo", "Access foo API") };
-        return scopes;
-    }
-
-    private List<ResponseMessage> responseMessages(){
-        List<ResponseMessage> responseMessageList = new ArrayList<>();
-        Map<String, Header> headers = new HashMap<>(4);
-        headers.put("token",new Header("token","jwt令牌",new ModelRef("string")));
-        responseMessageList.add(new ResponseMessageBuilder().code(200).message("ok").headersWithDescription(headers).build());
-        responseMessageList.add(new ResponseMessageBuilder().code(400).message("请求参数错误").responseModel(new ModelRef("MessageResponse")).build());
-        responseMessageList.add(new ResponseMessageBuilder().code(401).message("未授权/授权失败").responseModel(new ModelRef("MessageResponse")).build());
-        responseMessageList.add(new ResponseMessageBuilder().code(404).message("路由不存在").responseModel(new ModelRef("MessageResponse")).build());
-        responseMessageList.add(new ResponseMessageBuilder().code(405).message("不支持的请求方法").responseModel(new ModelRef("MessageResponse")).build());
-        responseMessageList.add(new ResponseMessageBuilder().code(500).message("服务器内部错误").responseModel(new ModelRef("MessageResponse")).build());
-        return responseMessageList;
-    }
-
-    @Bean
-    public CorsFilter corsFilter() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("*");
-        config.setAllowCredentials(true);
-        config.addAllowedMethod("*");
-        config.addAllowedHeader("*");
-        UrlBasedCorsConfigurationSource configSource = new UrlBasedCorsConfigurationSource();
-        configSource.registerCorsConfiguration("/**", config);
-        return new CorsFilter(configSource);
     }
 }

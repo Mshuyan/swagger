@@ -32,9 +32,8 @@ public class TestController {
      * ApiImplicitParam 的 dataType 指定为Long时，必须指定 example 属性
      */
     @ApiOperation(value = "测试Long类型必须指定example问题",nickname = "123")
-    @ApiImplicitParam(name = "id", value = "Long 类型", required = true, dataType = "Long",example = "1",paramType = "header")
     @GetMapping("/test/{id}")
-    public String testLong(Long id){
+    public String testLong(@ApiParam("idid") Long id){
         return "you said " + id;
     }
 

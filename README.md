@@ -384,15 +384,13 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
 
 ## 注解
 
-### 说明
-
 > 声名：
 >
 > + 过时和测试后发现没有作用的注解或属性将不做介绍
 >
 > + 斜体表示不常用
 
-#### @Api
+### @Api
 
 - 作用域：类，一般标注在`Controller`类上
 
@@ -418,7 +416,7 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
   public class TestController {
   ```
 
-#### @ApiImplicitParam
+### @ApiImplicitParam
 
 - 作用域：方法上、或作为`@ApiImplicitParams`注解`value`属性的值
 
@@ -508,7 +506,7 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
     public String test(@RequestBody TestDto dto){
     ```
 
-#### @ApiImplicitParams
+### @ApiImplicitParams
 
 - 作用域：方法上
 - 功能：当需要使用多个`@ApiImplicitParam`注解对参数进行描述时，使用本注解对这些描述进行管理
@@ -517,7 +515,7 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
     - 类型：ApiImplicitParam[]
     - 功能：当需要使用多个`@ApiImplicitParam`注解对参数进行描述时，使用本注解对这些描述进行管理
 
-#### @ApiModel
+### @ApiModel
 
 - 作用域：类，一般用于实体类上
 - 功能：描述`model`
@@ -530,7 +528,7 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
     - 类型：String
     - 功能：该`model`的描述信息
 
-#### @ApiModelProperty
+### @ApiModelProperty
 
 - 作用域：属性、getset方法上
 - 功能：描述实体类中属性
@@ -559,7 +557,7 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
     - 功能：指定是否在`model`中隐藏该属性
   - example：示例值
 
-#### @ApiOperation
+### @ApiOperation
 
 - 作用域：接口方法上
 
@@ -644,13 +642,16 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
 
 - 说明：注释说可以放在类上，测试后发现没有效果
 
-#### @ApiParam
+### @ApiParam
 
 + 作用域：参数列表、属性、getset方法
 
 + 功能：描述请求参数
 
-+ 说明：仅能对请求参数进行描述，不能对`model`中属性进行描述
++ 说明：
+
+  + 默认认为其标注的属性在`body`中，可以通过`@RequestParam`、`@PathVariable`等注解改变其提交方式
+  + 仅能对请求参数进行描述，不能对`model`中属性进行描述
 
 + 属性
 
@@ -662,7 +663,7 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
   >
   > 多了`hidden`属性，其他属性均相同
 
-#### @ApiResponse
+### @ApiResponse
 
 + 作用域：用于[@ApiResponses](# @ApiResponses)注解的属性值
 
@@ -691,7 +692,7 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
     + 类型：ResponseHeader[]
     + 功能：指定响应头信息，值为[@ResponseHeader](# @ResponseHeader)注解的数组
 
-#### @ApiResponses
+### @ApiResponses
 
 + 作用域：接口方法、controller类
 + 功能：对其所标注的接口的响应信息进行描述
@@ -703,7 +704,7 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
     + 功能：用于管理多条对该接口的响应的描述
     + 有效值：[@ApiResponse](# @ApiResponse)注解的数组
 
-#### @Authorization
+### @Authorization
 
 + 作用域：[@ApiOperation](# @ApiOperation)注解的`Authorizations`属性值
 + 功能：用于指定接口使用哪几种安全策略
@@ -714,7 +715,7 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
     + 功能：需要的使用的安全策略名称
     + 说明：参见[访问安全API](#访问安全API) 
 
-#### @ResponseHeader
+### @ResponseHeader
 
 + 作用域：[@ApiResponse](# @ApoResponse)注解的`responseHeader`的属性值
 
@@ -835,13 +836,52 @@ public UploadResultDto upload(@ApiParam(value = "上传图片数组", required =
 
 描述请求参数可用的注解有3种，以下是每种注解的使用方法
 
-+ 在参数列表中描述请求参数时，使用`@ApiParam`
++ 在参数列表中描述请求参数时，使用`@ApiParam`，但是不推荐该方式，因为默认认为该属性在`body`中
 + 在接口方法上描述请求参数时，使用`@ApiImplicitParam`
 + 在实体类中描述请求参数时，无论`Content-type`是什么，使用`@ApiModelProperty`
 
 ### 在`interface`中描述
 
-+ swagger描述信息单独提到`interface`
+> 为了将swagger对接口的描述与功能代码分开，防止swagger部分代码侵入，可以将controller提炼出1个`interface`类，在`interface`中对接口进行描述
+
++ 结构
+
+  ![image-20190320232942193](assets/image-20190320232942193.png) 
+
++ interface
+
+  ```java
+  @Api(tags = "demo相关接口")
+  public interface DemoApi {
+  
+      @ApiOperation(value = "修改dto")
+      String postDto(TestForm form);
+  
+      @ApiOperation("增加资源")
+      @ApiImplicitParam(name = "name",value = "名称",paramType = "form")
+      String post(String name);
+  }
+  ```
+
++ controller
+
+  ```java
+  @RestController
+  public class DemoController implements DemoApi {
+  
+      @Override
+      @PostMapping("/postDto")
+      public String postDto(@RequestBody TestForm form) {
+          return null;
+      }
+  
+      @Override
+      @PostMapping("/post")
+      public String post(String name) {
+          return null;
+      }
+  }
+  ```
 
 
 ## 采坑记录
