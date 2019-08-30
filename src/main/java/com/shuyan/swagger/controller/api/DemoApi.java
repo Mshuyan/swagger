@@ -11,7 +11,11 @@ import springfox.documentation.annotations.ApiIgnore;
  */
 @Api(tags = "demo相关接口")
 public interface DemoApi {
-
+    /**
+     * 12
+     * @param form 12
+     * @return 12
+     */
     @ApiIgnore
     @ApiOperation(value = "修改dto")
     String postDto(TestForm form);

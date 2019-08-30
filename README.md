@@ -383,7 +383,7 @@ public class Person {
 @ApiImplicitParam(name = "type", value = "图片类型；1:轮播图；2：文章图片", required = true, allowableValues = "1,2", paramType = "form", dataType = "int", example = "1")
 @Secured("ROLE_Article_images_upload")
 // 1. 必须指定Content-Type为multipart/form-data
-@PostMapping(value = "/images", consumes = MediaType.MULTIPART_FORM_DAform-data
+@PostMapping(value = "/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 // 2. 必须使用 @ApiParam，不能使用 @ApiImplicitParam
 public UploadResultDto upload(@ApiParam(value = "上传图片数组", required = true)
                               @NotEmpty(message = "{common.notNull}") MultipartFile[] files,
