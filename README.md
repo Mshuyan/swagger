@@ -1021,7 +1021,72 @@ public LoginResultDto login() {
 
 
 
+## swagger3
 
+### 集成
+
++ 引入依赖
+
+  ```xml
+  <dependency>
+      <groupId>io.springfox</groupId>
+      <artifactId>springfox-boot-starter</artifactId>
+  </dependency>
+  ```
+
++ 注解启用swagger3
+
+  ```
+  @EnableOpenApi
+  ```
+
++ 开启UI功能
+
+  ```
+  springfox:
+    documentation:
+      swagger-ui:
+        enabled: true
+  ```
+
++ 此时，写一个接口，即可在`/swagger-ui/index.html`路径下看见页面
+
+### 配置类
+
++ 注意：不写配置类也可使用默认功能
+
+```java
+@EnableOpenApi
+@Configuration
+public class Swagger3Config {
+    /**
+     * 这个配置不配也可以使用
+     * @return Docket
+     */
+    @Bean
+    public Docket createRestApi() {
+        // 3.0 需要使用 DocumentationType.OAS_30
+        return new Docket(DocumentationType.OAS_30)
+                .apiInfo(apiInfo())
+                .select()
+                .apis(RequestHandlerSelectors.withMethodAnnotation(Operation.class))
+                .paths(PathSelectors.any())
+                .build();
+    }
+
+    private ApiInfo apiInfo() {
+        // ......
+    }
+}
+```
+
+
+
+### 注意事项
+
++ 不写配置类也可使用
++ 扫描注解可以使用`@Opration`，也可以使用原来得`@ApiOperation`
++ 访问路径发生变化：`/swagger-ui/index.html`
 
 
 

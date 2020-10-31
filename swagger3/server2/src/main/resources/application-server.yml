@@ -1,0 +1,5 @@
+server:
+  port: 10200
+spring:
+  application:
+    name: server2
