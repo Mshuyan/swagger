@@ -960,11 +960,7 @@ public LoginResultDto login() {
 
   为了解决这个问题，层想过对`model`中属性进行分组，类似于校验注解中的`groups`属性，结果一些尝试后想明白1个问题，在多处引用的`model`也只会在接口文档中描述1次，所以根本无法根据不同接口分别进行描述，所以这项功能根本无法实现
 
-### TODO
 
-+ [在`interface`中描述](# 在`interface`中描述) 
-
-  
 
 ## swagger全家桶
 
