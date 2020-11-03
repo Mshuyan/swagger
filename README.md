@@ -1032,17 +1032,9 @@ public LoginResultDto login() {
 
 + 注解启用swagger3
 
-  ```
+  ```java
+  // 实际测试发现，加不加这个注解都好使
   @EnableOpenApi
-  ```
-
-+ 开启UI功能
-
-  ```
-  springfox:
-    documentation:
-      swagger-ui:
-        enabled: true
   ```
 
 + 此时，写一个接口，即可在`/swagger-ui/index.html`路径下看见页面
@@ -1052,6 +1044,9 @@ public LoginResultDto login() {
 + 注意：不写配置类也可使用默认功能
 
 ```java
+/**
+ * @author shuyan
+ */
 @EnableOpenApi
 @Configuration
 public class Swagger3Config {
@@ -1065,18 +1060,56 @@ public class Swagger3Config {
         return new Docket(DocumentationType.OAS_30)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.withMethodAnnotation(Operation.class))
+                .apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
                 .paths(PathSelectors.any())
-                .build();
+                .build()
+                .securitySchemes(Collections.singletonList(securityScheme()))
+                .securityContexts(Collections.singletonList(securityContext()));
     }
 
     private ApiInfo apiInfo() {
-        // ......
+        return new ApiInfoBuilder()
+                .title("Mobile Service API")
+                .description("移动端 接口文档说明")
+                .contact(new Contact("", "", ""))
+                .version("1.0")
+                .build();
+    }
+
+    private SecurityScheme securityScheme() {
+        // 安全配置需要使用 OAuth2SchemeBuilder
+        return new OAuth2SchemeBuilder("password")
+                .name("账号密码登陆")
+                .tokenUrl("/uaa/oauth/token")
+                .scopes(Arrays.asList(scopes()))
+                .build();
+    }
+
+
+    @SuppressWarnings("all")
+    private SecurityContext securityContext() {
+        List<String> ignoreUrls = Arrays.asList(
+                "/weChat/login",
+                "/weChat/phone/num",
+                "/weChat/register",
+                "/message/notice/page",
+                "/content/content/list",
+                "/content/item/page",
+                "/feedback",
+                "/order/icbc/callback"
+        );
+        return SecurityContext.builder()
+                .securityReferences(Collections.singletonList(new SecurityReference("spring_oauth", scopes())))
+                .forPaths(path -> ignoreUrls.stream().noneMatch(pattern -> new AntPathMatcher().match(pattern,path)))
+                .build();
+    }
+    private AuthorizationScope[] scopes() {
+        return new AuthorizationScope[]{
+                new AuthorizationScope("all", "All scope is trusted!")
+        };
     }
 }
 ```
-
-
 
 ### 注意事项
 
@@ -1084,5 +1117,128 @@ public class Swagger3Config {
 + 扫描注解可以使用`@Opration`，也可以使用原来得`@ApiOperation`
 + 访问路径发生变化：`/swagger-ui/index.html`
 
+### 安全配置
 
+```java
+private SecurityScheme securityScheme() {
+    // 安全配置需要使用 OAuth2SchemeBuilder
+    return new OAuth2SchemeBuilder("password")
+        .name("账号密码登陆")
+        .tokenUrl("/uaa/oauth/token")
+        .scopes(Arrays.asList(scopes()))
+        .build();
+}
+```
 
++ 目前版本存在bug，token请求回来了，但是不会自动放到`Authorization`请求头中
+
+### properties配置
+
+```properties
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: true    # 开启关闭ui功能，默认开启
+```
+
+### 微服务统一管理
+
++ 所有服务引入swagger依赖
+
++ 网关增加如下配置类
+
+  ```java
+  @Component
+  @Primary
+  public class DocumentationConfig implements SwaggerResourcesProvider {
+      public static final String API_URI = "/v3/api-docs";
+      @Resource
+      private RouteLocator routeLocator;
+      @Value("${spring.application.name}")
+      private String applicationName;
+  
+      @Override
+      public List<SwaggerResource> get() {
+          List<SwaggerResource> resources = new ArrayList<>();
+          routeLocator.getRoutes().filter(route -> !applicationName.equals(route.getUri().getHost())).subscribe(route -> resources.add(swaggerResource(route.getUri().getHost())));
+          return resources;
+      }
+  
+      private SwaggerResource swaggerResource(String name) {
+          SwaggerResource swaggerResource = new SwaggerResource();
+          swaggerResource.setName(name);
+          swaggerResource.setLocation("/" + name + API_URI);
+          swaggerResource.setSwaggerVersion("3.0");
+          return swaggerResource;
+      }
+  }
+  ```
+
++ 每个服务仿写自己得swagger配置类
+
+  ```java
+  @Configuration
+  public class Swagger3Config {
+      /**
+       * 这个配置不配也可以使用
+       * @return Docket
+       */
+      @Bean
+      public Docket createRestApi(@Value("${spring.application.name}")String applicationName) {
+          // 3.0 需要使用 DocumentationType.OAS_30
+          return new Docket(DocumentationType.OAS_30)
+                  .apiInfo(apiInfo())
+                  .select()
+                  .apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
+                  .paths(PathSelectors.any())
+                  .build()
+                  // 指定为本服务得服务名
+                  .pathMapping("/" + applicationName)
+                  .securitySchemes(Collections.singletonList(securityScheme()))
+                  .securityContexts(Collections.singletonList(securityContext()));
+      }
+  
+      private ApiInfo apiInfo() {
+          return new ApiInfoBuilder()
+                  .title("Mobile Service API")
+                  .description("移动端 接口文档说明")
+                  .contact(new Contact("", "", ""))
+                  .version("1.0")
+                  .build();
+      }
+  
+      private SecurityScheme securityScheme() {
+          return new OAuth2SchemeBuilder("password")
+                  .name("账号密码登陆")
+                  .tokenUrl("/uaa/oauth/token")
+                  .scopes(Arrays.asList(scopes()))
+                  .build();
+      }
+  
+  
+      @SuppressWarnings("all")
+      private SecurityContext securityContext() {
+          List<String> ignoreUrls = Arrays.asList(
+                  "/weChat/login",
+                  "/weChat/phone/num",
+                  "/weChat/register",
+                  "/message/notice/page",
+                  "/content/content/list",
+                  "/content/item/page",
+                  "/feedback",
+                  "/order/icbc/callback"
+          );
+          return SecurityContext.builder()
+                  .securityReferences(Collections.singletonList(new SecurityReference("spring_oauth", scopes())))
+                  .forPaths(path -> ignoreUrls.stream().noneMatch(pattern -> new AntPathMatcher().match(pattern,path)))
+                  .build();
+      }
+      private AuthorizationScope[] scopes() {
+          return new AuthorizationScope[]{
+                  new AuthorizationScope("all", "All scope is trusted!")
+          };
+      }
+  }
+  ```
+
+  + 注意`.pathMapping("/" + applicationName)`这行代码，否则请求服务时缺少服务名称那级路径

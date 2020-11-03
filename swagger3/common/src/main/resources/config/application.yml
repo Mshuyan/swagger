@@ -1,0 +1,4 @@
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: false

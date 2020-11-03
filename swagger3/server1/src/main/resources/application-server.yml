@@ -3,8 +3,3 @@ server:
 spring:
   application:
     name: server1
-
-springfox:
-  documentation:
-    swagger-ui:
-      enabled: true
